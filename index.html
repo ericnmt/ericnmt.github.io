@@ -1,31 +1,490 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My First Website</title>
-    <!-- Link to an external CSS file for styling -->
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>~/eric-johnson</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0d0f0d;
+    --bg-soft:#13161320;
+    --panel:#121512;
+    --border:#2a2e29;
+    --fg:#cfd3cb;
+    --fg-dim:#7d837a;
+    --amber:#ffb000;
+    --amber-soft:#ffb00022;
+    --green:#8fae6e;
+    --red:#d97b6c;
+    --font:'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+
+  html{scroll-behavior:smooth;}
+
+  body{
+    background:var(--bg);
+    color:var(--fg);
+    font-family:var(--font);
+    font-size:15px;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+    padding:0 0 6rem;
+    overflow-x:hidden;
+  }
+
+  /* faint scanline texture */
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    background:repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 2px,
+      rgba(0,0,0,.18) 3px,
+      transparent 4px
+    );
+    opacity:.35;
+    z-index:9999;
+  }
+
+  .wrap{
+    max-width:880px;
+    margin:0 auto;
+    padding:0 1.5rem;
+  }
+
+  a{color:var(--amber);text-decoration:none;}
+  a:hover{text-decoration:underline;}
+
+  .prompt{color:var(--amber);}
+  .path{color:var(--green);}
+  .comment{color:var(--fg-dim);}
+  .flag{color:var(--red);}
+
+  /* ---------- header / socials ---------- */
+  header{
+    border-bottom:1px solid var(--border);
+    background:var(--panel);
+    position:sticky;
+    top:0;
+    z-index:50;
+    backdrop-filter:blur(4px);
+  }
+  .bar{
+    display:flex;
+    align-items:center;
+    gap:.6rem;
+    padding:.7rem 1.5rem;
+    max-width:880px;
+    margin:0 auto;
+  }
+  .dots{display:flex;gap:.45rem;margin-right:.4rem;}
+  .dot{width:11px;height:11px;border-radius:50%;}
+  .dot.r{background:#e06c5a;}
+  .dot.y{background:var(--amber);}
+  .dot.g{background:var(--green);}
+  .title{color:var(--fg-dim);font-size:.82rem;}
+  .socials{margin-left:auto;display:flex;gap:1.1rem;}
+  .socials a{
+    color:var(--fg-dim);
+    font-size:.85rem;
+    display:flex;
+    align-items:center;
+    gap:.35rem;
+    transition:color .15s;
+  }
+  .socials a:hover{color:var(--amber);text-decoration:none;}
+  .socials svg{width:15px;height:15px;fill:currentColor;}
+
+  /* ---------- terminal body ---------- */
+  main{padding-top:2.5rem;}
+
+  .line{white-space:pre-wrap;word-break:break-word;}
+  .ps1{color:var(--amber);}
+  .ps1 .u{color:var(--green);}
+  .ps1 .h{color:var(--fg);}
+  .ps1 .p{color:#6fa8c9;}
+
+  .cursor{
+    display:inline-block;
+    width:9px;
+    height:1.05em;
+    background:var(--amber);
+    margin-left:2px;
+    vertical-align:text-bottom;
+    animation:blink 1.05s steps(1) infinite;
+  }
+  @keyframes blink{50%{opacity:0;}}
+
+  .out{margin:.15rem 0 1.9rem;}
+
+  /* boot block */
+  #boot .line{color:var(--fg-dim);font-size:.86rem;line-height:1.5;}
+  #boot .ok{color:var(--green);}
+
+  /* ascii banner */
+  .banner{margin-bottom:1.8rem;}
+  .banner pre{
+    color:var(--amber);
+    font-size:.82rem;
+    line-height:1.15;
+    font-weight:500;
+    overflow-x:auto;
+    text-shadow:0 0 12px var(--amber-soft);
+    white-space:pre;
+  }
+  .banner pre::-webkit-scrollbar{height:4px;}
+  .banner pre::-webkit-scrollbar-thumb{background:var(--border);}
+
+  /* sections */
+  section{margin-bottom:2.6rem;scroll-margin-top:5rem;}
+
+  h2.cmd{
+    font-size:1rem;
+    font-weight:500;
+    margin-bottom:.7rem;
+  }
+  h2.cmd .prompt{margin-right:.4rem;}
+
+  .bio p{margin-bottom:.9rem;color:var(--fg);max-width:68ch;}
+  .bio .meta{color:var(--fg-dim);font-size:.86rem;}
+
+  /* experience / projects */
+  .entry{
+    border-left:2px solid var(--border);
+    padding:.1rem 0 .1rem 1.1rem;
+    margin-bottom:1.5rem;
+    transition:border-color .2s;
+  }
+  .entry:hover{border-color:var(--amber);}
+  .entry .head{display:flex;flex-wrap:wrap;gap:.5rem;align-items:baseline;}
+  .entry .role{color:var(--fg);font-weight:500;}
+  .entry .at{color:var(--amber);}
+  .entry .when{color:var(--fg-dim);font-size:.82rem;margin-left:auto;}
+  .entry ul{list-style:none;margin-top:.45rem;}
+  .entry li{color:var(--fg-dim);font-size:.9rem;padding-left:1.1rem;position:relative;margin-bottom:.25rem;}
+  .entry li::before{content:"›";position:absolute;left:0;color:var(--amber);}
+
+  .stack{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.55rem;}
+  .chip{
+    font-size:.74rem;
+    color:var(--fg-dim);
+    border:1px solid var(--border);
+    border-radius:3px;
+    padding:.08rem .45rem;
+    background:var(--bg-soft);
+  }
+
+  .projects{display:grid;gap:1rem;}
+  .card{
+    border:1px solid var(--border);
+    border-radius:5px;
+    padding:1rem 1.1rem;
+    background:var(--panel);
+    transition:transform .15s, border-color .15s;
+  }
+  .card:hover{border-color:var(--amber);transform:translateY(-2px);}
+  .card h3{font-size:.95rem;font-weight:500;color:var(--fg);margin-bottom:.3rem;display:flex;align-items:center;gap:.5rem;}
+  .card h3 .flag{font-size:.78rem;}
+  .card p{font-size:.87rem;color:var(--fg-dim);margin-bottom:.6rem;}
+  .card .links{display:flex;gap:1rem;font-size:.8rem;}
+
+  /* resume dropdown */
+  .resume details{
+    border:1px solid var(--border);
+    border-radius:5px;
+    background:var(--panel);
+    overflow:hidden;
+  }
+  .resume summary{
+    cursor:pointer;
+    padding:.85rem 1.1rem;
+    font-size:.9rem;
+    color:var(--fg);
+    list-style:none;
+    display:flex;
+    align-items:center;
+    gap:.6rem;
+    user-select:none;
+    transition:background .15s;
+  }
+  .resume summary:hover{background:var(--amber-soft);}
+  .resume summary::-webkit-details-marker{display:none;}
+  .resume summary .caret{color:var(--amber);transition:transform .2s;display:inline-block;}
+  .resume details[open] summary .caret{transform:rotate(90deg);}
+  .resume summary .hint{margin-left:auto;color:var(--fg-dim);font-size:.78rem;}
+  .resume .frame{border-top:1px solid var(--border);background:#1b1b1b;}
+  .resume embed,.resume iframe{width:100%;height:560px;border:0;display:block;}
+  .resume .fallback{padding:1rem 1.1rem;font-size:.85rem;color:var(--fg-dim);}
+
+  footer{
+    margin-top:3rem;
+    padding-top:1.4rem;
+    border-top:1px solid var(--border);
+    color:var(--fg-dim);
+    font-size:.82rem;
+  }
+
+  /* reveal animation for sections after boot */
+  .reveal{opacity:0;transform:translateY(8px);}
+  .reveal.show{opacity:1;transform:none;transition:opacity .4s ease, transform .4s ease;}
+
+  @media (max-width:560px){
+    body{font-size:14px;}
+    .title{display:none;}
+    .entry .when{margin-left:0;width:100%;}
+    .resume embed,.resume iframe{height:420px;}
+    .banner pre{font-size:.58rem;}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .cursor{animation:none;}
+    .reveal{opacity:1;transform:none;}
+    html{scroll-behavior:auto;}
+  }
+</style>
 </head>
 <body>
 
-    <header>
-        <h1>Welcome to My Website</h1>
-        <p>This is the default homepage file recognized by web servers.</p>
-    </header>
+<header>
+  <div class="bar">
+    <div class="dots">
+      <span class="dot r"></span>
+      <span class="dot y"></span>
+      <span class="dot g"></span>
+    </div>
+    <span class="title">eric@ericnmt.me: ~</span>
+    <nav class="socials">
+      <a href="https://github.com/ericnmt" target="_blank" rel="noopener" aria-label="GitHub">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+        GitHub
+      </a>
+      <a href="https://www.linkedin.com/in/ericjohnson07/" target="_blank" rel="noopener" aria-label="LinkedIn">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13.6 0H2.4A2.4 2.4 0 0 0 0 2.4v11.2A2.4 2.4 0 0 0 2.4 16h11.2a2.4 2.4 0 0 0 2.4-2.4V2.4A2.4 2.4 0 0 0 13.6 0ZM4.9 13.4H2.6V6h2.3v7.4ZM3.7 5A1.34 1.34 0 1 1 5 3.66 1.33 1.33 0 0 1 3.7 5Zm9.7 8.4h-2.3V9.8c0-.86-.02-1.96-1.2-1.96s-1.38.93-1.38 1.9v3.66H6.3V6h2.2v1h.03a2.42 2.42 0 0 1 2.17-1.2c2.32 0 2.75 1.53 2.75 3.52v4.08Z"/></svg>
+        LinkedIn
+      </a>
+    </nav>
+  </div>
+</header>
 
-    <main>
-        <section>
-            <h2>About This Page</h2>
-            <p>The <code>index.html</code> file acts as the main entry point for your website.</p>
-        </section>
-    </main>
+<main class="wrap">
+
+  <!-- boot sequence -->
+  <section id="boot">
+    <div id="boot-out" class="out"></div>
+  </section>
+
+  <!-- typed intro command -->
+  <section id="intro-cmd">
+    <div class="line">
+      <span class="ps1"><span class="u">eric</span>@<span class="h">ericnmt.me</span>:<span class="p">~</span>$ </span><span id="typed"></span><span class="cursor" id="cursor"></span>
+    </div>
+  </section>
+
+  <!-- everything below reveals after boot -->
+  <div id="content" hidden>
+
+    <section class="banner reveal" id="banner" aria-hidden="true">
+<pre> ███████╗██████╗ ██╗ ██████╗                                   
+██╔════╝██╔══██╗██║██╔════╝                                   
+█████╗  ██████╔╝██║██║                                        
+██╔══╝  ██╔══██╗██║██║                                        
+███████╗██║  ██║██║╚██████╗                                   
+╚══════╝╚═╝  ╚═╝╚═╝ ╚═════╝                                   
+                                                              
+     ██╗ ██████╗ ██╗  ██╗███╗   ██╗███████╗ ██████╗ ███╗   ██╗
+     ██║██╔═══██╗██║  ██║████╗  ██║██╔════╝██╔═══██╗████╗  ██║
+     ██║██║   ██║███████║██╔██╗ ██║███████╗██║   ██║██╔██╗ ██║
+██   ██║██║   ██║██╔══██║██║╚██╗██║╚════██║██║   ██║██║╚██╗██║
+╚█████╔╝╚██████╔╝██║  ██║██║ ╚████║███████║╚██████╔╝██║ ╚████║
+ ╚════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝ ╚═════╝ ╚═╝  ╚═══╝                                                    
+</pre>
+    </section>
+
+    <section class="bio reveal" id="about">
+      <h2 class="cmd"><span class="prompt">$</span>cat about.txt</h2>
+      <div class="out">
+        <p>Hi, I'm Eric Johnson, P1 .</p>
+        <p>P2</p>
+        <p class="meta"># location: LOCATION · open to: HPC, AI/ML Internships</p>
+      </div>
+    </section>
+
+    <section class="reveal" id="experience">
+      <h2 class="cmd"><span class="prompt">$</span>history --experience</h2>
+      <div class="out">
+
+        <div class="entry">
+          <div class="head">
+            <span class="role">Supercompter Intitute, High Performance Computing Intern</span>
+            <span class="at">@ Los Alamos National Laboratory</span>
+            <span class="when">May 2026 — Present</span>
+          </div>
+          <ul>
+            <li>H1</li>
+            <li>H2</li>
+            <li>H3</li>
+          </ul>
+          <div class="stack">
+            
+          </div>
+        </div>
+        	<span class="chip">Bash</span><span class="chip">OpenCHAMI</span><span class="chip">Docker (Podman)</span>
+        <div class="entry">
+          <div class="head">
+            <span class="role">IT Automation & Systems Administration Intern</span>
+            <span class="at">@ Los Alamos National Laboratory</span>
+            <span class="when">May 2023 — May 2026</span>
+          </div>
+          <ul>
+            <li>H1</li>
+            <li>H2</li>
+            <li>H3</li>
+          </ul>
+          <div class="stack">
+			<span class="chip">Linux</span><span class="chip">Ansible</span><span class="chip">Hyper-V</span><span class="chip">GitLab</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="reveal" id="projects">
+      <h2 class="cmd"><span class="prompt">$</span>ls ~/projects</h2>
+      <div class="out projects">
+
+        <div class="card">
+          <h3>oop-clinic-scheduler<span class="flag">--featured</span></h3>
+          <p>A command-line clinic schedule management system that is built off of object oriented principles, demonstrating real-world backend database management and user interface connection.</p>
+          <div class="links">
+            <a href="https://github.com/ericnmt/oop-clinic-scheduler" target="_blank" rel="noopener">source ↗</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>P2</h3>
+          <p>PD2</p>
+          <div class="links">
+            <a href="#" target="_blank" rel="noopener">source ↗</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>P3</h3>
+          <p>PD3</p>
+          <div class="links">
+            <a href="#" target="_blank" rel="noopener">source ↗</a>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="resume reveal" id="resume">
+      <h2 class="cmd"><span class="prompt">$</span>open resume.pdf</h2>
+      <div class="out">
+        <details>
+          <summary>
+            <span class="caret">▸</span>
+            <span>resume.pdf</span>
+            <span class="hint">click to expand · 1 page</span>
+          </summary>
+          <div class="frame">
+            <iframe src="resume.pdf" title="Resume preview"></iframe>
+            <div class="fallback">
+              # Place a <span class="prompt">resume.pdf</span> next to this file to render it here.
+              You can also <a href="resume.pdf" target="_blank" rel="noopener">open it in a new tab ↗</a>.
+            </div>
+          </div>
+        </details>
+      </div>
+    </section>
 
     <footer>
-        <p>&copy; 2026 My Website</p>
+      <!--<div class="line"><span class="comment"># built in a terminal, for people who live in one.</span></div>-->
+      <div class="line"><span class="comment"># © 2026 Eric Johnson</span></div>
     </footer>
 
-    <!-- Link to an external JavaScript file -->
-    <script src="script.js"></script>
+  </div>
+</main>
+
+<script>
+(function(){
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var bootLines = [
+    ['[  ', 'OK', ' ] Reached target Basic System.'],
+    ['[  ', 'OK', ' ] Started Network Manager.'],
+    ['[  ', 'OK', ' ] Mounted /home/eric.'],
+    ['[  ', 'OK', ' ] Started Personal Site Service.'],
+  ];
+
+  var bootEl = document.getElementById('boot-out');
+  var typedEl = document.getElementById('typed');
+  var cursorEl = document.getElementById('cursor');
+  var content = document.getElementById('content');
+
+  function el(html){ var d=document.createElement('div'); d.className='line'; d.innerHTML=html; return d; }
+
+  function renderBootLine(parts){
+    return '<span>'+parts[0]+'</span><span class="ok">'+parts[1]+'</span><span>'+parts[2]+'</span>';
+  }
+
+  function reveal(){
+    content.hidden = false;
+    var items = content.querySelectorAll('.reveal');
+    items.forEach(function(it, i){
+      setTimeout(function(){ it.classList.add('show'); }, reduced ? 0 : i*120);
+    });
+  }
+
+  var typeText = "whoami && cat about.txt";
+
+  function typeCommand(){
+    if(reduced){
+      typedEl.textContent = typeText;
+      reveal();
+      return;
+    }
+    var i = 0;
+    (function step(){
+      if(i <= typeText.length){
+        typedEl.textContent = typeText.slice(0,i);
+        i++;
+        setTimeout(step, 45 + Math.random()*40);
+      } else {
+        setTimeout(reveal, 350);
+      }
+    })();
+  }
+
+  function runBoot(){
+    if(reduced){
+      bootLines.forEach(function(p){ bootEl.appendChild(el(renderBootLine(p))); });
+      typeCommand();
+      return;
+    }
+    var i = 0;
+    (function step(){
+      if(i < bootLines.length){
+        bootEl.appendChild(el(renderBootLine(bootLines[i])));
+        i++;
+        setTimeout(step, 220);
+      } else {
+        setTimeout(typeCommand, 300);
+      }
+    })();
+  }
+
+  runBoot();
+})();
+</script>
 </body>
 </html>
